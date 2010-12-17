@@ -2,20 +2,35 @@
 
 @implementation CopyLabel
 
-- (void) awakeFromNib
+#pragma mark Initialization
+
+- (void) attachTapHandler
 {
-    [super awakeFromNib];
-    [self becomeFirstResponder];
+    [self setUserInteractionEnabled:YES];
     UIGestureRecognizer *touchy = [[UITapGestureRecognizer alloc]
         initWithTarget:self action:@selector(handleTap:)];
     [self addGestureRecognizer:touchy];
-    [self setUserInteractionEnabled:YES];
     [touchy release];
 }
 
+- (id) initWithFrame: (CGRect) frame
+{
+    [super initWithFrame:frame];
+    [self attachTapHandler];
+    return self;
+}
+
+- (void) awakeFromNib
+{
+    [super awakeFromNib];
+    [self attachTapHandler];
+}
+
+#pragma mark Clipboard
+
 - (void) copy: (id) sender
 {
-    NSLog(@"Do whatever you want.");
+    NSLog(@"Copy handler, label: “%@”.", self.text);
 }
 
 - (BOOL) canPerformAction: (SEL) action withSender: (id) sender
@@ -23,16 +38,17 @@
     return (action == @selector(copy:));
 }
 
-- (BOOL) canBecomeFirstResponder
-{
-    return YES;
-}
-
 - (void) handleTap: (UIGestureRecognizer*) recognizer
 {
+    [self becomeFirstResponder];
     UIMenuController *menu = [UIMenuController sharedMenuController];
     [menu setTargetRect:self.frame inView:self.superview];
     [menu setMenuVisible:YES animated:YES];
+}
+
+- (BOOL) canBecomeFirstResponder
+{
+    return YES;
 }
 
 @end
