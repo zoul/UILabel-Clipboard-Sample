@@ -1,10 +1,5 @@
-@interface Application : NSObject <UIApplicationDelegate>
-{
-    UIWindow *window;
-    UIViewController *controller;
-}
+@interface Application : NSObject<UIApplicationDelegate>
 
-@property(retain) IBOutlet UIWindow *window;
 @property(retain) IBOutlet UIViewController *controller;
 
 @end
