@@ -1,5 +1,7 @@
 #import "CopyLabel.h"
-
+@interface CopyLabel ()
+- (void) unhilight;
+@end
 @implementation CopyLabel
 
 #pragma mark Initialization
@@ -7,32 +9,43 @@
 - (void) attachTapHandler
 {
     [self setUserInteractionEnabled:YES];
-    UIGestureRecognizer *touchy = [[UITapGestureRecognizer alloc]
-        initWithTarget:self action:@selector(handleTap:)];
+    UIGestureRecognizer *touchy = [[UILongPressGestureRecognizer alloc]
+                                   initWithTarget:self action:@selector(handleTap:)];
     [self addGestureRecognizer:touchy];
-    [touchy release];
 }
 
 - (id) initWithFrame: (CGRect) frame
 {
-    [super initWithFrame:frame];
-    [self attachTapHandler];
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self attachTapHandler];
+        
+    }
     return self;
 }
-
-- (void) awakeFromNib
-{
-    [super awakeFromNib];
-    [self attachTapHandler];
+- (id)initWithCoder:(NSCoder *)aDecoder{
+    self = [super initWithCoder:aDecoder];
+    if (self) {
+        [self attachTapHandler];
+    }
+    return self;
 }
 
 #pragma mark Clipboard
 
 - (void) copy: (id) sender
 {
-    NSLog(@"Copy handler, label: “%@”.", self.text);
+    if (self.customCopy) {
+        self.customCopy(self);
+    } else {
+        [[UIPasteboard generalPasteboard] setString:self.text];
+    }
+    
 }
-
+- (void) unhilight{
+    self.highlighted = NO;
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIMenuControllerWillHideMenuNotification object:nil];
+}
 - (BOOL) canPerformAction: (SEL) action withSender: (id) sender
 {
     return (action == @selector(copy:));
@@ -42,8 +55,14 @@
 {
     [self becomeFirstResponder];
     UIMenuController *menu = [UIMenuController sharedMenuController];
-    [menu setTargetRect:self.frame inView:self.superview];
-    [menu setMenuVisible:YES animated:YES];
+    if ([menu isMenuVisible]) {
+    } else {
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(unhilight) name:UIMenuControllerWillHideMenuNotification object:nil];
+        [menu setTargetRect:self.frame inView:self.superview];
+        [menu setMenuVisible:YES animated:YES];
+        self.highlighted = YES;
+    }
+    
 }
 
 - (BOOL) canBecomeFirstResponder
